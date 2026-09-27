@@ -20,6 +20,9 @@ html,body{background:#2a2a2a;color:#fff;font-family:'Frutiger LightCn',"Arial Na
 .btn{background:#d58c00;color:#000;border:0;border-radius:10px;padding:12px 18px;font-family:'Platelet';font-weight:600;font-size:14px;letter-spacing:3px;cursor:pointer}
 .btn.ghost{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.35)}
 .btn:disabled{opacity:.45;cursor:default}
+.seg{display:flex;border:1px solid rgba(255,255,255,.35);border-radius:10px;overflow:hidden}
+.seg button{background:transparent;color:#fff;border:0;padding:12px 14px;font-family:'Platelet';font-weight:600;font-size:13px;letter-spacing:2px;cursor:pointer}
+.seg button.on{background:#efcfa9;color:#000}
 .frame{max-width:1112px;margin:0 auto 32px;padding:0 16px}
 .scaler{position:relative;overflow:hidden;border-radius:6px}
 .stage{width:1080px;height:840px;transform-origin:0 0;position:absolute;top:0;left:0}
@@ -82,6 +85,10 @@ html,body{background:#2a2a2a;color:#fff;font-family:'Frutiger LightCn',"Arial Na
 <div class="tools">
   <h1>WOCHENPLAN-GENERATOR</h1>
   <button class="btn ghost" id="reload" type="button">NEU LADEN</button>
+  <div class="seg" role="group" aria-label="Auflösung">
+    <button type="button" class="on" data-scale="2" aria-pressed="true">4K · 2160 × 1680</button>
+    <button type="button" data-scale="1" aria-pressed="false">HD · 1080 × 840</button>
+  </div>
   <button class="btn" id="download" type="button" disabled>ALS BILD HERUNTERLADEN</button>
   <div class="info" id="info">Plan wird aus dem Google Sheet geladen …</div>
 </div>
@@ -226,7 +233,7 @@ btn.addEventListener("click",async()=>{
   try{
     await ensureFonts();
     const node=document.getElementById("plan");
-    const opts={width:1080,height:840,pixelRatio:1,cacheBust:true,fontEmbedCSS:fontCSS()};
+    const opts={width:1080,height:840,pixelRatio:SCALE,cacheBust:true,fontEmbedCSS:fontCSS()};
     let url;
     try{
       await htmlToImage.toPng(node,opts);        // erster Durchlauf: Schriften vorladen (v.a. Safari)
@@ -236,17 +243,22 @@ btn.addEventListener("click",async()=>{
       const stage=document.getElementById("stage"), tf=stage.style.transform;
       stage.style.transform="none";              // fuer die Aufnahme unskaliert
       try{
-        const canvas=await html2canvas(node,{width:1080,height:840,scale:1,backgroundColor:"#efcfa9",logging:false});
+        const canvas=await html2canvas(node,{width:1080,height:840,scale:SCALE,backgroundColor:"#efcfa9",logging:false});
         url=canvas.toDataURL("image/png");
       }finally{ stage.style.transform=tf; }
     }
     const a=document.createElement("a");
-    a.href=url;a.download="wochenplan-"+new Date().toISOString().slice(0,10)+".png";
+    a.href=url;a.download="wochenplan-"+new Date().toISOString().slice(0,10)+(SCALE===2?"-4k":"-hd")+".png";
     document.body.appendChild(a);a.click();a.remove();
   }catch(e){console.error(e);info.className="info warn";info.textContent="Bild konnte nicht erstellt werden. Bitte am PC mit Chrome oder Edge versuchen.";}
   btn.textContent=old;btn.disabled=false;
 });
 document.getElementById("reload").addEventListener("click",load);
+let SCALE=2;
+document.querySelectorAll(".seg button").forEach(b=>b.addEventListener("click",()=>{
+  SCALE=Number(b.dataset.scale);
+  document.querySelectorAll(".seg button").forEach(x=>{const on=x===b;x.classList.toggle("on",on);x.setAttribute("aria-pressed",on);});
+}));
 window.addEventListener("resize",scalePreview);
 scalePreview();load();
 </script>
