@@ -64,16 +64,16 @@ html,body{background:#2a2a2a;color:#fff;font-family:'Frutiger LightCn',"Arial Na
 .ic{width:44px;display:flex;justify-content:center;flex:0 0 auto}
 .tx{display:flex;flex-direction:column;gap:3px;min-width:0}
 .t{font-family:'Platelet';font-weight:600;font-size:16px;letter-spacing:.5px;white-space:nowrap}
-.l{font-size:21px;line-height:1;white-space:nowrap}
+.l{font-size:21px;line-height:1;white-space:nowrap;overflow:hidden;text-overflow:clip}
 .closed{display:flex;align-items:center;height:var(--cellh);font-size:21px;color:#5a5b59;padding-left:4px}
 .fin{margin-top:auto;margin-bottom:26px}
 /* Kompakt-Modus fuer volle Tage (mehr als 4 Slots) */
-#plan.compact .cell{padding:2px 8px;gap:6px}
+#plan.compact .cell{padding:2px 7px;gap:5px}
 #plan.compact .ic{width:26px}
 #plan.compact .ic svg{height:calc(var(--cellh) - 8px);width:auto}
-#plan.compact .tx{flex-direction:row;align-items:baseline;gap:7px}
-#plan.compact .t{font-size:14px;letter-spacing:0}
-#plan.compact .l{font-size:18px}
+#plan.compact .tx{flex-direction:row;align-items:baseline;gap:6px}
+#plan.compact .t{font-size:13px;letter-spacing:0}
+#plan.compact .l{font-size:17px}
 #plan.compact .row{padding:4px 0}
 #plan.compact .cells{gap:5px 8px}
 #plan.compact .closed{font-size:18px}
@@ -202,10 +202,28 @@ function load(){
     })
     .catch(err=>{console.warn(err);info.className="info warn";info.textContent="Plan konnte nicht geladen werden. Bitte Internet prüfen und „Neu laden“ tippen.";});
 }
+/* Schriften fest mitgeben, damit jeder Browser sie ins Bild uebernimmt */
+function fontCSS(){
+  let css="";
+  for(const sheet of document.styleSheets){
+    let rules; try{rules=sheet.cssRules;}catch(e){continue;}
+    for(const r of rules){ if(r.type===CSSRule.FONT_FACE_RULE) css+=r.cssText+"\n"; }
+  }
+  return css;
+}
+async function ensureFonts(){
+  const fams=["300 20px 'Frutiger LightCn'","400 20px 'Platelet'","600 20px 'Platelet'","300 20px 'Platelet Thin'"];
+  await Promise.all(fams.map(f=>document.fonts.load(f)));
+  await document.fonts.ready;
+}
 btn.addEventListener("click",async()=>{
   btn.disabled=true;const old=btn.textContent;btn.textContent="WIRD ERSTELLT …";
   try{
-    const url=await htmlToImage.toPng(document.getElementById("plan"),{width:1080,height:840,pixelRatio:1,cacheBust:true});
+    await ensureFonts();
+    const node=document.getElementById("plan");
+    const opts={width:1080,height:840,pixelRatio:1,cacheBust:true,fontEmbedCSS:fontCSS()};
+    await htmlToImage.toPng(node,opts);          // erster Durchlauf: Schriften vorladen (v.a. Safari)
+    const url=await htmlToImage.toPng(node,opts); // zweiter Durchlauf: finales Bild
     const a=document.createElement("a");
     a.href=url;a.download="wochenplan-"+new Date().toISOString().slice(0,10)+".png";
     document.body.appendChild(a);a.click();a.remove();
