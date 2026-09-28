@@ -43,6 +43,7 @@ html,body{background:#2a2a2a;color:#fff;font-family:'Frutiger LightCn',"Arial Na
 .bar{background:#000;color:#fff;border-radius:10px;padding:12px 22px;display:flex;align-items:center;gap:20px}
 .bar .nm{display:flex;flex-direction:column}
 .bar .k{font-family:'Platelet Thin';font-size:17px;letter-spacing:6px;color:rgba(255,255,255,.8)}
+.bar .cap{font-size:17px;letter-spacing:3px;color:rgba(255,255,255,.72);margin-top:4px}
 .bar .n{font-family:'Platelet';font-weight:600;font-size:28px;letter-spacing:4px;color:#d58c00;line-height:1.05}
 .bar .r{margin-left:auto;display:flex;align-items:center;gap:26px}
 .bar .sp{display:flex;align-items:center;gap:12px;font-size:22px}
@@ -148,7 +149,7 @@ function build(data){
     <div class="ttl"><span class="th">SAUNA</span><span class="tb">WOCHENPLAN</span></div><div class="obar"></div></div>
     <div class="keys"><span><i class="lg" style="background:#ef5b84">${icon("ladies",.8)}</i>Ladies</span><span><i class="lg" style="background:#fff">${icon("mixed",.8)}</i>Mixed</span><span><i class="lg" style="border:2px solid rgba(0,0,0,.2)">${icon("clean",.8,"#5a5b59")}</i>Reinigung</span></div>
   </div>`;
-  const san=`<div class="bar san"><div class="nm"><span class="k">LADIES · MIXED</span><span class="n">SANARIUM</span></div>
+  const san=`<div class="bar san"><div class="nm"><span class="n">SAUNA COZY</span><span class="cap">6 – 8 PERSONEN</span></div>
     <div class="r"><div class="sp"><b>SANARIUM</b><span>${thermo(W)}55 °C</span><span>${drop(W)}50 %</span></div>
     <div class="sp"><b>FINNISCH</b><span>${thermo(W)}85 °C</span><span>${drop(W)}10 %</span></div></div></div>`;
   const maxSlots=Math.max(0,...WEEK.map(d=>rowsOf(data.sanarium,d).length));
@@ -173,12 +174,26 @@ function build(data){
   const hours = groups.length===1
     ? `<div class="hr"><span class="h1">${dayRange(groups[0])}</span><span class="h2">${esc(groups[0].txt)}</span></div>`
     : `<div class="hr">${groups.slice(0,4).map(g=>`<div class="hl"><span class="d">${dayRange(g)}</span><span class="z">${esc(g.txt)}</span></div>`).join("")}</div>`;
-  const fin=`<div class="bar fin">${icon("mixed",1.9,W,3)}<div class="nm"><span class="k">MIXED</span><span class="n">FINNISCHE SAUNA</span></div>
+  const fin=`<div class="bar fin">${icon("mixed",1.9,W,3)}<div class="nm"><span class="n">SAUNA VIEW</span><span class="cap">12 – 16 PERSONEN</span></div>
     <div class="r">${hours}<div class="sp"><span>${thermo(W)}85 °C</span><span>${drop(W)}10 %</span></div></div></div>`;
   return head+san+body+fin;
 }
 
 /* Zellenhoehe so waehlen, dass alles in 840 px passt */
+/* Ueberschneidungen finden (z. B. alte Zeilen im Sheet) */
+function overlaps(d){
+  const out=[];
+  [["Sanarium",d.sanarium],["Finnische Sauna",d.finnisch]].forEach(([name,plan])=>{
+    WEEK.forEach(day=>{
+      const rows=rowsOf(plan,day);
+      for(let i=1;i<rows.length;i++){
+        const toM=x=>{const[h,m]=x.split(":").map(Number);return h*60+m;};
+        if(toM(rows[i].start)<toM(rows[i-1].end)){out.push(name+" "+day);break;}
+      }
+    });
+  });
+  return out;
+}
 function fit(){
   const plan=document.getElementById("plan");
   let h=58;
@@ -208,8 +223,12 @@ function load(){
       document.getElementById("plan").innerHTML=build(d);
       const ok=fit();
       const t=new Date().toLocaleString("de-AT",{dateStyle:"medium",timeStyle:"short"});
-      info.textContent="Stand aus dem Google Sheet: "+t+(ok?"":" · Achtung: Der Plan ist zu voll und wird unten abgeschnitten. Bitte Slots im Sheet prüfen.");
-      if(!ok) info.className="info warn";
+      const clash=overlaps(d);
+      let msg="Stand aus dem Google Sheet: "+t;
+      if(clash.length) msg+=" · Achtung: Zeiten überschneiden sich – "+clash.join("; ")+". Vermutlich stehen im Sheet noch alte Zeilen unter den neuen.";
+      else if(!ok) msg+=" · Achtung: Der Plan ist zu voll und wird unten abgeschnitten. Bitte Slots im Sheet prüfen.";
+      info.textContent=msg;
+      if(clash.length||!ok) info.className="info warn";
       btn.disabled=false;
     })
     .catch(err=>{console.warn(err);info.className="info warn";info.textContent="Plan konnte nicht geladen werden. Bitte Internet prüfen und „Neu laden“ tippen.";});

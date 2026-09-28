@@ -39,6 +39,9 @@ main{padding:20px 20px 32px;display:flex;flex-direction:column;gap:14px}
 /* Kacheln */
 .tile{background:var(--black);color:var(--white);padding:22px 22px 20px;border-radius:10px;display:flex;flex-direction:column;gap:16px}
 .tile-top{display:flex;align-items:center;justify-content:space-between}
+.tl{display:flex;flex-direction:column;gap:6px}
+.cap{font-size:15px;letter-spacing:2px;color:rgba(255,255,255,.66);text-transform:uppercase}
+.hcap{margin-top:6px;font-size:15px;letter-spacing:3px;color:rgba(255,255,255,.66);text-transform:uppercase}
 .tile-label{font-family:var(--head);font-weight:600;font-size:14px;letter-spacing:5px;color:var(--orange)}
 .status{display:flex;align-items:center;gap:18px}
 .status .ico{flex:0 0 auto;display:flex;align-items:center;justify-content:center}
@@ -189,10 +192,10 @@ function metaLine(info,small){
 
 /* ---------- Ansichten ---------- */
 function viewHome(data,t){
-  const tile=(href,label,plan,aria)=>{
+  const tile=(href,label,plan,aria,cap)=>{
     const info=statusInfo(plan,t);
     return `<a class="tile" href="${href}" aria-label="${aria}">
-      <div class="tile-top"><span class="tile-label">${label}</span>${arrowIcon("#d58c00")}</div>
+      <div class="tile-top"><span class="tl"><span class="tile-label">${label}</span><span class="cap">${cap}</span></span>${arrowIcon("#d58c00")}</div>
       ${statusBlock(info,false)}
       ${metaLine(info)}
       <div class="foot">${esc(info.foot)}</div></a>`;
@@ -205,8 +208,8 @@ function viewHome(data,t){
       <div class="datetime">${t.weekday.toUpperCase()}, ${t.clock} UHR</div>
     </header>
     <main style="gap:16px">
-      ${tile("#sanarium","SANARIUM",data.sanarium,"Sanarium öffnen")}
-      ${tile("#finnisch","FINNISCHE SAUNA",data.finnisch,"Finnische Sauna öffnen")}
+      ${tile("#sanarium","SAUNA COZY",data.sanarium,"Sauna Cozy öffnen","6 – 8 Personen")}
+      ${tile("#finnisch","SAUNA VIEW",data.finnisch,"Sauna View öffnen","12 – 16 Personen")}
     </main>`;
 }
 function detailHead(titleHtml,tabs,info){
@@ -220,7 +223,7 @@ function detailHead(titleHtml,tabs,info){
 function sanariumTabs(which){
   return `<nav class="tabs"><a href="#sanarium" class="${which==="heute"?"on":""}"${which==="heute"?' aria-current="page"':""}>HEUTE</a><a href="#sanarium-woche" class="${which==="woche"?"on":""}"${which==="woche"?' aria-current="page"':""}>WOCHE</a></nav>`;
 }
-const SAN_TITLE=`<div class="h-bold" style="margin-top:12px;font-size:36px;letter-spacing:3px">SANARIUM</div>`;
+const SAN_TITLE=`<div class="h-bold" style="margin-top:12px;font-size:36px;letter-spacing:3px">SAUNA COZY</div><div class="hcap">6 – 8 Personen</div>`;
 function viewSanariumHeute(data,t){
   const rows=daysOf(data.sanarium,t.weekday);
   const active=findActive(rows,t.minutes);
@@ -258,7 +261,7 @@ function viewSanariumWoche(data,t){
       ${weekBlocks(data.sanarium,t,true)}</main>`;
 }
 function viewFinnisch(data,t){
-  const title=`<div class="h-thin" style="margin-top:12px;font-size:22px;letter-spacing:5px">MIXED</div><div class="h-bold" style="margin-top:2px;font-size:32px;letter-spacing:2px">FINNISCHE SAUNA</div>`;
+  const title=`<div class="h-bold" style="margin-top:12px;font-size:36px;letter-spacing:3px">SAUNA VIEW</div><div class="hcap">12 – 16 Personen</div>`;
   return detailHead(title,"",statusInfo(data.finnisch,t)) +
     `<main><div class="legend"><div class="keys">
       <span>${mixedIcon("#000",26,22)}Mixed Finnisch</span>
