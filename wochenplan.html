@@ -32,19 +32,24 @@ html,body{background:#2a2a2a;color:#fff;font-family:'Frutiger LightCn',"Arial Na
 .head{display:flex;justify-content:space-between;align-items:flex-end}
 .brand{display:flex;align-items:baseline;gap:14px}
 .brand .logo{font-size:26px;letter-spacing:2px}
-.brand .claim{font-family:'Platelet Thin';font-size:12px;letter-spacing:5px;color:#3d3e3c}
+.brand .claim{font-family:'Frutiger LightCn';font-weight:300;font-size:16px;letter-spacing:4px;color:#3d3e3c}
 .ttl{display:flex;align-items:baseline;gap:16px;margin-top:12px}
 .ttl .th{font-family:'Platelet Thin';font-size:32px;letter-spacing:8px}
 .ttl .tb{font-family:'Platelet';font-weight:600;font-size:44px;letter-spacing:5px;line-height:1}
 .obar{width:48px;height:4px;background:#d58c00;margin-top:12px}
+.hright{display:flex;align-items:flex-end;gap:20px}
+.qr{display:flex;flex-direction:column;align-items:center;gap:6px}
+.qrbox{width:124px;height:124px;background:#fff;border-radius:10px;padding:9px}
+.qrbox svg{width:100%;height:100%;display:block}
+.qrcap{font-family:'Frutiger LightCn';font-weight:300;font-size:14px;letter-spacing:2px;color:#3d3e3c;white-space:nowrap}
 .keys{display:flex;gap:18px;font-size:22px;padding:10px 14px;border:1px solid rgba(0,0,0,.18);border-radius:10px}
 .keys span{display:flex;align-items:center;gap:8px}
 .lg{width:40px;height:34px;display:inline-flex;align-items:center;justify-content:center;border-radius:8px}
 .bar{background:#000;color:#fff;border-radius:10px;padding:12px 22px;display:flex;align-items:center;gap:20px}
 .bar .nm{display:flex;flex-direction:column}
 .bar .k{font-family:'Platelet Thin';font-size:17px;letter-spacing:6px;color:rgba(255,255,255,.8)}
-.bar .cap{font-size:17px;letter-spacing:3px;color:rgba(255,255,255,.72);margin-top:4px}
-.bar .n{font-family:'Platelet';font-weight:600;font-size:28px;letter-spacing:4px;color:#d58c00;line-height:1.05}
+.bar .cap{font-size:15px;letter-spacing:3px;color:rgba(255,255,255,.72);margin-top:4px}
+.bar .n{font-family:'Platelet';font-weight:600;font-size:40px;letter-spacing:4px;color:#d58c00;line-height:1.05}
 .bar .r{margin-left:auto;display:flex;align-items:center;gap:26px}
 .bar .sp{display:flex;align-items:center;gap:12px;font-size:22px}
 .bar .sp b{font-family:'Frutiger LightCn';font-weight:300;font-size:16px;letter-spacing:3px;color:rgba(255,255,255,.72)}
@@ -97,6 +102,7 @@ html,body{background:#2a2a2a;color:#fff;font-family:'Frutiger LightCn',"Arial Na
 
 <script src="https://cdn.jsdelivr.net/npm/html-to-image@1.11.11/dist/html-to-image.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 <script>
 /* ============================================================
    Wochenplan-Generator (linker Screen, unterer Teil 1080 x 840)
@@ -141,15 +147,25 @@ function dayRange(g){
   return g.from===g.to?SHORT[WEEK[g.from]]:SHORT[WEEK[g.from]]+" – "+SHORT[WEEK[g.to]];
 }
 
+/* QR-Code zur Kunden-App (gleiche Seite im Repository: app.html) */
+function qrSvg(){
+  try{
+    const url="https://link.getqr.com/U3MH2Ha";
+    const qr=qrcode(0,"M"); qr.addData(url); qr.make();
+    return qr.createSvgTag({cellSize:4,margin:0,scalable:true});
+  }catch(e){ console.warn("QR-Code nicht verfuegbar",e); return ""; }
+}
+
 /* ---------- Aufbau ---------- */
 function build(data){
   const W="#fff";
   const head=`<div class="head">
     <div><div class="brand"><span class="logo">sportssupport</span><span class="claim">FEEL THE HEAT</span></div>
     <div class="ttl"><span class="th">SAUNA</span><span class="tb">WOCHENPLAN</span></div><div class="obar"></div></div>
-    <div class="keys"><span><i class="lg" style="background:#ef5b84">${icon("ladies",.8)}</i>Ladies</span><span><i class="lg" style="background:#fff">${icon("mixed",.8)}</i>Mixed</span><span><i class="lg" style="border:2px solid rgba(0,0,0,.2)">${icon("clean",.8,"#5a5b59")}</i>Reinigung</span></div>
+    <div class="hright"><div class="keys"><span><i class="lg" style="background:#ef5b84">${icon("ladies",.8)}</i>Ladies</span><span><i class="lg" style="background:#fff">${icon("mixed",.8)}</i>Mixed</span><span><i class="lg" style="border:2px solid rgba(0,0,0,.2)">${icon("clean",.8,"#5a5b59")}</i>Reinigung</span></div>
+    <div class="qr"><div class="qrbox">${qrSvg()}</div><div class="qrcap">PLAN AM HANDY</div></div></div>
   </div>`;
-  const san=`<div class="bar san"><div class="nm"><span class="n">SAUNA COZY</span><span class="cap">6 – 8 PERSONEN</span></div>
+  const san=`<div class="bar san"><div class="nm"><span class="n">SAUNA COZY</span><span class="cap">MAX. 8 PERSONEN</span></div>
     <div class="r"><div class="sp"><b>SANARIUM</b><span>${thermo(W)}55 °C</span><span>${drop(W)}50 %</span></div>
     <div class="sp"><b>FINNISCH</b><span>${thermo(W)}85 °C</span><span>${drop(W)}10 %</span></div></div></div>`;
   const maxSlots=Math.max(0,...WEEK.map(d=>rowsOf(data.sanarium,d).length));
@@ -174,7 +190,7 @@ function build(data){
   const hours = groups.length===1
     ? `<div class="hr"><span class="h1">${dayRange(groups[0])}</span><span class="h2">${esc(groups[0].txt)}</span></div>`
     : `<div class="hr">${groups.slice(0,4).map(g=>`<div class="hl"><span class="d">${dayRange(g)}</span><span class="z">${esc(g.txt)}</span></div>`).join("")}</div>`;
-  const fin=`<div class="bar fin">${icon("mixed",1.9,W,3)}<div class="nm"><span class="n">SAUNA VIEW</span><span class="cap">12 – 16 PERSONEN</span></div>
+  const fin=`<div class="bar fin">${icon("mixed",1.9,W,3)}<div class="nm"><span class="n">SAUNA VIEW</span><span class="cap">MAX. 14 PERSONEN</span></div>
     <div class="r">${hours}<div class="sp"><span>${thermo(W)}85 °C</span><span>${drop(W)}10 %</span></div></div></div>`;
   return head+san+body+fin;
 }
