@@ -84,6 +84,27 @@ main{padding:20px 20px 32px;display:flex;flex-direction:column;gap:14px}
 .drow .a{font-size:17px}
 .empty{padding:28px 10px;text-align:center;font-size:18px;color:var(--ink-soft)}
 .note{padding:40px 24px;text-align:center;font-size:18px;letter-spacing:1px;color:var(--ink-soft)}
+:root{--cream:#ebebeb}
+header.top{background:#fff;color:#000;border-bottom:1px solid rgba(0,0,0,.08)}
+.brand .claim{color:#555} .datetime{color:#555} .back{color:#555}
+.tabs{border-color:#2b2b2b} .tabs a{color:#2b2b2b} .tabs a.on{background:#2b2b2b;color:#fff}
+.tile{background:#fff;color:#000;border:1.5px solid #2b2b2b}
+.cap,.hcap{color:#555} .foot{border-top-color:rgba(0,0,0,.14);color:#555}
+.meta{color:#333} .meta .time{color:#000}
+.legend{background:#fff;border-color:rgba(0,0,0,.14)}
+.day{background:#fff} .day.today{box-shadow:inset 0 0 0 1.5px #2b2b2b}
+.row.active{box-shadow:inset 0 0 0 1.5px #2b2b2b}
+header.top{border-bottom:0;box-shadow:0 6px 18px rgba(0,0,0,.07);position:relative;z-index:2}
+.tile{border:1px solid rgba(0,0,0,.07);box-shadow:0 1px 2px rgba(0,0,0,.06), 0 6px 18px rgba(0,0,0,.06);border-radius:16px}
+.tabs{border-radius:10px}
+.legend{border:1px solid rgba(0,0,0,.07);box-shadow:0 1px 2px rgba(0,0,0,.06), 0 6px 18px rgba(0,0,0,.06);border-radius:14px}
+.day{border-radius:14px;box-shadow:0 1px 2px rgba(0,0,0,.06), 0 6px 18px rgba(0,0,0,.06);border:1px solid rgba(0,0,0,.05)}
+.day.today{box-shadow:inset 0 0 0 2px #d58c00, 0 1px 2px rgba(0,0,0,.06), 0 6px 18px rgba(0,0,0,.06)}
+.row{border-radius:12px;border-bottom:0;margin-bottom:6px;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.06), 0 6px 18px rgba(0,0,0,.06)}
+.row.active{box-shadow:inset 0 0 0 2px #d58c00, 0 1px 2px rgba(0,0,0,.06), 0 6px 18px rgba(0,0,0,.06)}
+.row.clean{background:repeating-linear-gradient(135deg,#f7f7f7 0 8px,#d4d4d4 8px 10.5px);box-shadow:none}
+.row.clean .t,.row.clean .a{color:#555}
+.row.past{opacity:.5}
 </style>
 </head>
 <body>
@@ -169,14 +190,14 @@ function statusBlock(info,withTag,iconSize,extra){
   const a=info.active;
   const W=iconSize||66, H=Math.round(W*64/76);
   if(!a){
-    return `<div class="status"><div class="ico">${mixedIcon("rgba(255,255,255,.55)",W,H)}</div>
+    return `<div class="status"><div class="ico">${mixedIcon("rgba(0,0,0,.4)",W,H)}</div>
       <div class="txt">${withTag?'<span class="now-tag">JETZT</span>':''}<span class="big">GESCHLOSSEN</span>${withTag?`<div class="meta small"><span>${esc(info.foot)}</span></div>`:''}</div></div>`;
   }
   const k=kind(a.bereich);
   let icon, lines;
-  if(k==="clean"){icon=cleaningIcon("#ffffff",Math.round(W*.8),Math.round(W*.8));lines=['REINIGUNG'];}
+  if(k==="clean"){icon=cleaningIcon("#000000",Math.round(W*.8),Math.round(W*.8));lines=['REINIGUNG'];}
   else if(k==="ladies"){icon=personIcon("#ef5b84",Math.round(H*.62),H);}
-  else {icon=mixedIcon("#ffffff",W,H);}
+  else {icon=mixedIcon("#000000",W,H);}
   if(!lines){const parts=a.bereich.split(" ");lines=[parts[0],parts.slice(1).join(" ")].filter(Boolean).map(s=>s.toUpperCase());}
   const cls=k==="ladies"?"big pink":"big";
   const txt=withTag
@@ -187,7 +208,7 @@ function statusBlock(info,withTag,iconSize,extra){
 function metaLine(info,small){
   const a=info.active; if(!a) return "";
   const s=specsFor(a.bereich);
-  return `<div class="meta${small?" small":""}"><span class="time">${a.start} – ${a.end}</span>${s?`<span>${thermoIcon("#ffffff")}${s.temp} °C</span><span>${dropIcon("#ffffff")}${s.hum} %</span>`:""}</div>`;
+  return `<div class="meta${small?" small":""}"><span class="time">${a.start} – ${a.end}</span>${s?`<span>${thermoIcon("#000000")}${s.temp} °C</span><span>${dropIcon("#000000")}${s.hum} %</span>`:""}</div>`;
 }
 
 /* ---------- Ansichten ---------- */
@@ -228,7 +249,7 @@ function viewSanariumHeute(data,t){
   const active=findActive(rows,t.minutes);
   const list=rows.length ? rows.map(r=>{
     const past=t.minutes>=toMin(r.end), on=r===active;
-    return `<div class="row${on?" active":past?" past":""}"><div class="ico">${rowIcon(r.bereich,true)}</div><span class="t">${r.start} – ${r.end}</span><span class="a">${esc(r.bereich)}</span>${on?'<span class="tag">JETZT</span>':""}</div>`;
+    return `<div class="row${on?" active":past?" past":""}${kind(r.bereich)==="clean"?" clean":""}"><div class="ico">${rowIcon(r.bereich,true)}</div><span class="t">${r.start} – ${r.end}</span><span class="a">${esc(r.bereich)}</span>${on?'<span class="tag">JETZT</span>':""}</div>`;
   }).join("") : `<div class="empty">Heute kein Plan hinterlegt</div>`;
   return detailHead(SAN_TITLE,sanariumTabs("heute"),statusInfo(data.sanarium,t)) +
     `<main style="gap:0;padding-top:24px"><div class="kicker">Heute, ${esc(t.weekday)}</div><div class="title" style="margin-top:6px">TAGESPLAN</div><div style="margin-top:14px">${list}</div></main>`;

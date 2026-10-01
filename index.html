@@ -94,7 +94,8 @@
 
   .hero-title{ margin:30px 0 0; }
   .hero-title .thin{ display:block; font-family:'Platelet Thin', sans-serif; font-size:112px; letter-spacing:9px; }
-  .hero-title .bold{ display:block; font-family:'Platelet', sans-serif; font-weight:600; font-size:164px; letter-spacing:2px; margin-top:6px; white-space:nowrap; }
+  .hero-title .bold{ display:block; font-family:'Platelet', sans-serif; font-weight:600; font-size:164px; letter-spacing:2px; white-space:nowrap; }
+  .hero-title .bold + .thin{ margin-top:14px; }
   .orange-underline{ width:144px; height:6px; background:var(--orange); margin-top:26px; }
 
   .status-row{ display:flex; align-items:center; gap:34px; margin-top:auto; }
@@ -155,6 +156,16 @@
   .row .time{ flex:0 0 auto; white-space:nowrap; font-family:'Frutiger LightCn', sans-serif; font-weight:300; letter-spacing:1px; font-size:calc(40px * var(--row-scale, 1)); color:var(--ink); }
   .row .area{ font-family:'Frutiger LightCn', sans-serif; font-size:calc(36px * var(--row-scale, 1)); color:var(--ink); font-weight:300; flex:1 1 auto; min-width:0; overflow-wrap:break-word; }
   .row.active .area{ font-weight:400; }
+:root{--cream:#ebebeb;--line:rgba(0,0,0,.12)}
+.row{background:#fff;border-bottom:0 !important;margin:5px 0;border-radius:12px}
+.row.past{opacity:.45}
+.row.active{background:#fff;box-shadow:inset 0 0 0 2px #2b2b2b;border-left-color:#d58c00}
+.schedule{border-radius:36px 36px 0 0;margin-top:-36px;height:956px;position:relative;z-index:3;box-shadow:0 -10px 30px rgba(0,0,0,.35)}
+.row{background:#fff;border:0 !important;border-left:0 !important;box-shadow:0 1px 2px rgba(0,0,0,.06), 0 6px 18px rgba(0,0,0,.06);border-radius:16px;margin:6px 0}
+.row.active{background:#fff;box-shadow:inset 0 0 0 2px #d58c00, 0 1px 2px rgba(0,0,0,.06), 0 6px 18px rgba(0,0,0,.06)}
+.row.clean{background:repeating-linear-gradient(135deg,#f7f7f7 0 8px,#d4d4d4 8px 10.5px);box-shadow:none}
+.row.clean .time,.row.clean .area{color:#555}
+.row.past{opacity:.5}
 </style>
 </head>
 <body>
@@ -168,12 +179,11 @@
     <div class="brand">
       <div class="logo">sportssupport</div>
       <div class="tagline">FEEL THE HEAT</div>
-      <div class="qrwrap" id="qrWrap"><div class="qrcap">PLAN<br>AM HANDY</div><div class="qrbox" id="qrBox"></div></div>
     </div>
 
     <div class="hero-title">
-      <span class="thin">AKTUELL</span>
       <span class="bold">SAUNA COZY</span>
+      <span class="thin">AKTUELL</span>
       <div class="orange-underline"></div>
     </div>
 
@@ -191,7 +201,6 @@
 
   <!-- ===== UNTEN: Tagesplan ===== -->
   <div class="schedule">
-    <div class="schedule-header" id="dayLabel">HEUTE · MONTAG</div>
     <div class="schedule-title">TAGESPLAN SAUNA COZY</div>
     <div class="schedule-list" id="scheduleList"></div>
   </div>
@@ -199,7 +208,6 @@
 </div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 <script>
 /* ============================================================
    Der Wochenplan kommt live aus der Google-Tabelle: Code.gs liefert
@@ -308,7 +316,6 @@ function afterText(activeRow, rows){
   return after ? "Danach " + after.start + " " + after.bereich : "Danach geschlossen";
 }
 function renderSchedule(weekday, rows, activeRow, nowMin){
-  document.getElementById("dayLabel").textContent = "HEUTE · " + weekday.toUpperCase();
   const list = document.getElementById("scheduleList");
 
   if(rows.length === 0){
@@ -327,6 +334,7 @@ function renderSchedule(weekday, rows, activeRow, nowMin){
     const div = document.createElement("div");
     const isPast = !isActive && nowMin >= toMinutes(r.end);
     div.className = "row" + (isActive ? " active" : "") + (isPast ? " past" : "");
+    if(String(r.bereich).toLowerCase().includes("reinigung")) div.classList.add("clean");
     const bereichNorm = String(r.bereich || "").trim().toLowerCase();
     let icon, color;
     try {
@@ -400,13 +408,6 @@ function update(){
   renderSchedule(weekday, rows, active, minutes);
   renderHero(active, next, rows);
 }
-
-/* ---------- QR-Code zur Kunden-App (app.html im selben Repository) ---------- */
-try{
-  const qr=qrcode(0,"M"); qr.addData("https://link.getqr.com/U3MH2Ha"); qr.make();
-  document.getElementById("qrBox").innerHTML=qr.createSvgTag({cellSize:4,margin:0,scalable:true});
-  document.getElementById("qrWrap").style.display="flex";
-}catch(e){ console.warn("QR-Code nicht verfuegbar",e); }
 
 /* ---------- Statischer Wegweiser-Pfeil (immer sichtbar, Richtung Sauna) ---------- */
 document.getElementById("statusArrow").innerHTML = arrowIcon("#d58c00");

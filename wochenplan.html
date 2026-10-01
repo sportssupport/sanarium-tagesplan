@@ -85,6 +85,21 @@ html,body{background:#2a2a2a;color:#fff;font-family:'Frutiger LightCn',"Arial Na
 .ccell .t{font-size:16px}
 .l2{display:flex;align-items:center;gap:8px;font-size:20px;white-space:nowrap}
 .cclosed{text-align:center;font-size:20px;color:#5a5b59;padding-top:10px}
+#plan{background:#ebebeb !important}
+.bar{background:#fff !important;color:#000 !important;border:1.5px solid #2b2b2b}
+.bar .cap,.bar .sp b,.bar .h1,.bar .hl .d{color:#555 !important}
+.row{border-bottom-color:rgba(0,0,0,.12) !important}
+.bar{border:1px solid rgba(0,0,0,.07) !important;box-shadow:0 1px 2px rgba(0,0,0,.06), 0 6px 18px rgba(0,0,0,.06);border-radius:14px !important}
+.keys{background:#fff;border:1px solid rgba(0,0,0,.07) !important;box-shadow:0 1px 2px rgba(0,0,0,.06), 0 6px 18px rgba(0,0,0,.06);border-radius:14px !important}
+.cell,.ccell{border-radius:12px !important}
+.cell.mixed,.ccell.mixed{box-shadow:0 1px 2px rgba(0,0,0,.06), 0 6px 18px rgba(0,0,0,.06)}
+.cell.ladies,.ccell.ladies{box-shadow:0 1px 2px rgba(0,0,0,.08), 0 6px 18px rgba(239,91,132,.18)}
+.cell.clean,.ccell.clean{background:repeating-linear-gradient(135deg,#f7f7f7 0 8px,#d4d4d4 8px 10.5px) !important;border:0 !important;color:#555 !important}
+.qrbox{box-shadow:0 1px 2px rgba(0,0,0,.06), 0 6px 18px rgba(0,0,0,.06)}
+.dh{border-bottom:1px solid rgba(0,0,0,.14) !important}
+.keys .lg{box-shadow:inset 0 0 0 1px rgba(0,0,0,.14)}
+.hcol{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+.hclean{font-size:17px;letter-spacing:1px;color:#555;background:repeating-linear-gradient(135deg,#f7f7f7 0 6px,#e0e0e0 6px 8px);padding:3px 10px;border-radius:6px}
 </style>
 </head>
 <body>
@@ -156,13 +171,21 @@ function qrSvg(){
   }catch(e){ console.warn("QR-Code nicht verfuegbar",e); return ""; }
 }
 
+/* Reinigungszeiten der Sauna View, gleiche Tage zusammengefasst */
+function cleanSummary(plan){
+  const perDay=WEEK.map(d=>rowsOf(plan,d).filter(r=>kind(r.bereich)==="clean").map(r=>r.start+" – "+r.end).join(", "));
+  const groups=[];
+  perDay.forEach((txt,i)=>{const g=groups[groups.length-1];if(g&&g.txt===txt)g.to=i;else groups.push({from:i,to:i,txt});});
+  return groups.filter(g=>g.txt);
+}
+
 /* ---------- Aufbau ---------- */
 function build(data){
-  const W="#fff";
+  const W="#000";
   const head=`<div class="head">
     <div><div class="brand"><span class="logo">sportssupport</span><span class="claim">FEEL THE HEAT</span></div>
     <div class="ttl"><span class="th">SAUNA</span><span class="tb">WOCHENPLAN</span></div><div class="obar"></div></div>
-    <div class="hright"><div class="keys"><span><i class="lg" style="background:#ef5b84">${icon("ladies",.8)}</i>Ladies</span><span><i class="lg" style="background:#fff">${icon("mixed",.8)}</i>Mixed</span><span><i class="lg" style="border:2px solid rgba(0,0,0,.2)">${icon("clean",.8,"#5a5b59")}</i>Reinigung</span></div>
+    <div class="hright"><div class="keys"><span><i class="lg" style="background:#ef5b84">${icon("ladies",.8)}</i>Ladies</span><span><i class="lg" style="background:#fff">${icon("mixed",.8)}</i>Mixed</span><span><i class="lg" style="background:repeating-linear-gradient(135deg,#f7f7f7 0 8px,#d4d4d4 8px 10.5px)">${icon("clean",.8,"#5a5b59")}</i>Reinigung</span></div>
     <div class="qr"><div class="qrbox">${qrSvg()}</div><div class="qrcap">PLAN AM HANDY</div></div></div>
   </div>`;
   const san=`<div class="bar san"><div class="nm"><span class="n">SAUNA COZY</span><span class="cap">MAX. 8 PERSONEN</span></div>
@@ -190,8 +213,10 @@ function build(data){
   const hours = groups.length===1
     ? `<div class="hr"><span class="h1">${dayRange(groups[0])}</span><span class="h2">${esc(groups[0].txt)}</span></div>`
     : `<div class="hr">${groups.slice(0,4).map(g=>`<div class="hl"><span class="d">${dayRange(g)}</span><span class="z">${esc(g.txt)}</span></div>`).join("")}</div>`;
+  const cg=cleanSummary(data.finnisch);
+  const cleanLine = cg.length ? `<div class="hclean">${cg.map(g=>"Reinigung "+(dayRange(g)==="TÄGLICH"?"täglich":dayRange(g))+" "+esc(g.txt)).join(" · ")}</div>` : "";
   const fin=`<div class="bar fin">${icon("mixed",1.9,W,3)}<div class="nm"><span class="n">SAUNA VIEW</span><span class="cap">MAX. 14 PERSONEN</span></div>
-    <div class="r">${hours}<div class="sp"><span>${thermo(W)}85 °C</span><span>${drop(W)}10 %</span></div></div></div>`;
+    <div class="r"><div class="hcol">${hours}${cleanLine}</div><div class="sp"><span>${thermo(W)}85 °C</span><span>${drop(W)}10 %</span></div></div></div>`;
   return head+san+body+fin;
 }
 
