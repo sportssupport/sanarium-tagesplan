@@ -211,14 +211,15 @@ function build(data){
         :`<div class="closed">Geschlossen</div>`;
       return `<div class="row"><div class="dn">${d.toUpperCase()}</div>${cells}</div>`;}).join("")}</div>`;
   }
+  const finClosed=WEEK.every(d=>!rowsOf(data.finnisch,d).length);
   const groups=finSummary(data.finnisch);
-  const hours = groups.length===1
+  const hours = finClosed ? `<div class="hr"><span class="h2">Derzeit geschlossen</span></div>` : groups.length===1
     ? `<div class="hr"><span class="h1">${dayRange(groups[0])}</span><span class="h2">${esc(groups[0].txt)}</span></div>`
     : `<div class="hr">${groups.slice(0,4).map(g=>`<div class="hl"><span class="d">${dayRange(g)}</span><span class="z">${esc(g.txt)}</span></div>`).join("")}</div>`;
   const cg=cleanSummary(data.finnisch);
-  const cleanLine = cg.length ? `<div class="hclean">${cg.map(g=>"Reinigung "+(dayRange(g)==="TÄGLICH"?"täglich":dayRange(g))+" "+esc(g.txt)).join(" · ")}</div>` : "";
+  const cleanLine = (!finClosed && cg.length) ? `<div class="hclean">${cg.map(g=>"Reinigung "+(dayRange(g)==="TÄGLICH"?"täglich":dayRange(g))+" "+esc(g.txt)).join(" · ")}</div>` : "";
   const fin=`<div class="bar fin">${icon("mixed",1.9,W,3)}<div class="nm"><span class="n">SAUNA VIEW</span><span class="cap">MAX. 14 PERSONEN</span></div>
-    <div class="r"><div class="hcol">${hours}${cleanLine}</div><div class="sp"><span>${thermo(W)}85 °C</span><span>${drop(W)}10 %</span></div></div></div>`;
+    <div class="r"><div class="hcol">${hours}${cleanLine}</div>${finClosed?"":`<div class="sp"><span>${thermo(W)}85 °C</span><span>${drop(W)}10 %</span></div>`}</div></div>`;
   return head+san+body+fin;
 }
 
